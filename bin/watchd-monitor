@@ -1,0 +1,49 @@
+#!/usr/bin/python2
+from __future__ import print_function
+import socket
+import subprocess
+import sys
+import os
+import signal
+
+def child_env():
+    keys = { 'PATH' }
+    new_env = {}
+    for key in keys:
+        if key in os.environ:
+            new_env[key] = os.environ[key]
+    return new_env
+
+def connect_to_watchd():
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        sock.connect('/tmp/watchd.sock')
+    except socket.error:
+        server = subprocess.Popen(['watchd'],
+                                  env=child_env())
+        if server.wait() != 0:
+            print('Failed to start watchd server.', file=sys.stderr)
+        sock.connect('/tmp/watchd.sock')
+    return sock
+
+
+def sub(command):
+    sock = connect_to_watchd()
+
+    process = subprocess.Popen(command)
+    try:
+        while True:
+            line = sock.recv(1)
+            if line == '':
+                print('Server terminated', file=sys.stderr)
+                sys.exit(1)
+            sys.stderr.write('\033[1;33mRestarting...\033[0m\n')
+            process.terminate()
+            process.wait()
+            process = subprocess.Popen(command)
+    except KeyboardInterrupt:
+        process.terminate()
+        process.wait()
+
+if __name__ == "__main__":
+    sub(sys.argv[1:])
