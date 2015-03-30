@@ -7,6 +7,8 @@ You tell your editor (provided you use a configurable enough one) to run a comma
 
 watchd is faster and more reliable than file system watchers like inotify.
 
+![Screenshot of a terminal using watchd-monitor](https://i.imgur.com/gNYHtdQ.png)
+
 ##Installation
 
 The server needs Python 2 and twisted.
