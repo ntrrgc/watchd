@@ -46,4 +46,8 @@ def sub(command):
         process.wait()
 
 if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        print('Please specify a command to run, e.g: watchd-monitor ./my_program', 
+              file=sys.stderr)
+        sys.exit(1)
     sub(sys.argv[1:])
