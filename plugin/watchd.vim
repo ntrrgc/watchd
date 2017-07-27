@@ -1,4 +1,4 @@
-python << EOF
+python3 << EOF
 import socket
 
 def watchd_pub():
@@ -15,7 +15,7 @@ def watchd_pub():
 EOF
 
 function! WatchdNotify()
-  python << EOF
+  python3 << EOF
 watchd_pub()
 EOF
 endfunction
