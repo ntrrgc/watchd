@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 from twisted.internet import reactor, protocol, endpoints
 from twisted.protocols import basic
 from twisted.internet.endpoints import UNIXClientEndpoint, connectProtocol
@@ -37,7 +37,7 @@ def on_server_started(pipe_write):
     # Don't get killed by ^C
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     # Notify parent
-    os.write(pipe_write, 'x')
+    os.write(pipe_write, b'x')
     os.close(pipe_write)
     # Close files
     sys.stdin.close()
@@ -59,7 +59,7 @@ def fork_server():
     else:
         os.close(pipe_write)
         started_signal = os.read(pipe_read, 1)
-        if started_signal != '':
+        if started_signal != b'':
             sys.exit(0) # Done!
         else:
             sys.stderr.write('Pipe error. Server may not be running.\n')
