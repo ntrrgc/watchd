@@ -12,7 +12,7 @@ def nohup():
 class PubProtocol(basic.LineReceiver):
     def __init__(self, factory):
         self.factory = factory
-        self.delimiter = '\n'
+        self.delimiter = b'\n'
 
     def connectionMade(self):
         self.factory.clients.add(self)
@@ -22,7 +22,7 @@ class PubProtocol(basic.LineReceiver):
 
     def lineReceived(self, line):
         for c in self.factory.clients:
-            c.transport.write('x')
+            c.transport.write(b'x')
 
 class PubFactory(protocol.Factory):
     def __init__(self):
@@ -31,7 +31,7 @@ class PubFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return PubProtocol(self)
 
-def on_server_started(pipe_write):
+def on_forked_server_started(pipe_write):
     # Don't get killed by your parent
     nohup()
     # Don't get killed by ^C
@@ -44,9 +44,13 @@ def on_server_started(pipe_write):
     sys.stdout.close()
     sys.stderr.close()
 
-def server(started_callback):
+def forked_server(started_callback):
     endpoints.serverFromString(reactor, "unix:/tmp/watchd.sock").listen(PubFactory())
     reactor.callWhenRunning(started_callback)
+    reactor.run()
+
+def foreground_server():
+    endpoints.serverFromString(reactor, "unix:/tmp/watchd.sock").listen(PubFactory())
     reactor.run()
 
 def fork_server():
@@ -55,7 +59,7 @@ def fork_server():
     pid = os.fork()
     if pid == 0: # Child process
         os.close(pipe_read)
-        server(lambda: on_server_started(pipe_write))
+        forked_server(lambda: on_forked_server_started(pipe_write))
     else:
         os.close(pipe_write)
         started_signal = os.read(pipe_read, 1)
@@ -66,4 +70,7 @@ def fork_server():
             sys.exit(1)
 
 if __name__ == "__main__":
-    fork_server()
+    if "--no-fork" in sys.argv:
+        foreground_server()
+    else:
+        fork_server()

@@ -11,9 +11,9 @@ watchd is faster and more reliable than file system watchers like inotify.
 
 ##Installation
 
-The server needs Python 2 and twisted.
+The server needs Python 3 and twisted.
 
-    sudo apt-get install python-twisted
+    sudo apt install python3-twisted
 
 There are three programs in `bin/`: `watchd`, `watchd-monitor` and `watchd-notify`. Add the `bin/` directory to your `PATH` environment or link them to a directory you already have for that purpose.
 
